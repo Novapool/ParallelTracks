@@ -6,6 +6,7 @@ import { QuestionDisplay } from '@/components/voting/QuestionDisplay';
 import { VotingButtons } from '@/components/voting/VotingButtons';
 import { VoteResults } from '@/components/voting/VoteResults';
 import { VotingStatus } from '@/components/voting/VotingStatus';
+import { AIResponses } from '@/components/voting/AIResponses';
 import { useSessionId } from '@/hooks/useSessionId';
 import { useCurrentState } from '@/hooks/useCurrentState';
 import { useVoteSubmission } from '@/hooks/useVoteSubmission';
@@ -18,6 +19,9 @@ export default function VotingPage() {
   const { state, loading, error } = useCurrentState();
   const { submitVote, status, error: submitError } = useVoteSubmission();
   const [hasVoted, setHasVoted] = useState(false);
+  const [responses, setResponses] = useState<Record<AIModel, string> | null>(null);
+  const [responsesLoading, setResponsesLoading] = useState(true);
+  const [responsesError, setResponsesError] = useState<string | null>(null);
 
   const questionId = state?.active_question?.id || null;
   const initialVoteCounts = Array.isArray(state?.vote_counts) ? state.vote_counts : [];
@@ -31,6 +35,27 @@ export default function VotingPage() {
       setHasVoted(hasVotedOnQuestion(questionId));
     }
   }, [questionId]);
+
+  useEffect(() => {
+    async function fetchResponses() {
+      try {
+        setResponsesLoading(true);
+        const res = await fetch('/api/get-responses');
+        if (!res.ok) {
+          throw new Error('Failed to fetch responses');
+        }
+        const data = await res.json();
+        setResponses(data);
+        setResponsesError(null);
+      } catch (err) {
+        setResponsesError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+        setResponsesLoading(false);
+      }
+    }
+
+    fetchResponses();
+  }, []);
 
   const handleVote = async (model: AIModel) => {
     if (!questionId || !sessionId || hasVoted) return;
@@ -79,6 +104,8 @@ export default function VotingPage() {
         </div>
 
         <QuestionDisplay question={state?.active_question?.question || null} />
+
+        <AIResponses responses={responses} loading={responsesLoading} error={responsesError} />
 
         <VotingStatus status={status} error={submitError} />
 
