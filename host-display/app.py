@@ -64,7 +64,7 @@ MODEL_VOICES = {
     "anthropic": "pNInz6obpgDQGcFmaJgB",  # Adam - Dominant, Firm
     "gpt": "TX3LPaxmHKxFdv7VOQHJ",       # Liam - Energetic, Social Media Creator
     "gemini": "EXAVITQu4vr4xnSDxMaL",    # Sarah - Mature, Reassuring, Confident
-    "grok": "SOYHLrjzK2X1ezoPC6cr",     # Harry - Fierce Warrior
+    "grok": "JBFqnCBsd6RMkjVDRZzb",     # George - Warm, Captivating Storyteller
     "deepseek": "nPczCjzI2devNBz1zQrb"  # Brian - Deep, Resonant and Comforting
 }
 
