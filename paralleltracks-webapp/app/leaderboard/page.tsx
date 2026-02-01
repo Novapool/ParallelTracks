@@ -32,8 +32,12 @@ export default function LeaderboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mb-4"></div>
-          <p className="text-gray-600">Loading leaderboard...</p>
+          <div className="pixel-loading mb-4 text-pixel-accent">
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p className="text-pixel-text-secondary font-retro text-xl">Loading leaderboard...</p>
         </div>
       </div>
     );
@@ -42,8 +46,8 @@ export default function LeaderboardPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-          <p className="text-red-800 font-medium">Error: {error}</p>
+        <div className="bg-[#3d0f28] border-4 border-pixel-error p-6 max-w-md">
+          <p className="text-pixel-error font-retro text-lg">Error: {error}</p>
         </div>
       </div>
     );
@@ -55,14 +59,14 @@ export default function LeaderboardPage() {
         <div className="text-center mb-8">
           <Link
             href="/"
-            className="inline-block text-blue-600 hover:text-blue-700 font-medium mb-4"
+            className="inline-block text-pixel-accent hover:brightness-110 font-retro text-lg mb-4"
           >
             ← Back to Voting
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-3xl font-pixel text-pixel-text mb-4">
             Leaderboard
           </h1>
-          <p className="text-gray-600">
+          <p className="text-lg font-retro text-pixel-text-secondary">
             AI model performance rankings
           </p>
         </div>
@@ -71,7 +75,7 @@ export default function LeaderboardPage() {
           <LeaderboardTable entries={leaderboard} />
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
+            <p className="text-pixel-text-secondary font-retro text-xl">
               No data available yet
             </p>
           </div>
