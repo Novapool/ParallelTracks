@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParallelTracks - Host Display</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header with trolley image -->
+        <header class="trolley-header">
+            <img src="{{ url_for('static', filename='images/trolley-problem.png') }}"
+                 alt="Trolley Problem"
+                 class="trolley-image">
+        </header>
+
+        <!-- AI Model Logos -->
+        <div class="model-logos">
+            {% for model in models %}
+            <div class="model-logo">
+                <img src="{{ url_for('static', filename='images/logos/' + model + '.png') }}"
+                     alt="{{ model }}"
+                     class="logo-img">
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Question Display -->
+        <div class="question-display">
+            <h2 class="pixel-text">Current Question</h2>
+            <p id="question-text" class="question-text">No active question</p>
+        </div>
+
+        <!-- AI Responses Grid -->
+        <div class="responses-grid">
+            {% for model in models %}
+            <div class="response-card" data-model="{{ model }}" style="border-color: {{ colors[model] }};">
+                <div class="response-header" style="background-color: {{ colors[model] }};">
+                    <h3 class="pixel-text">{{ model|upper }}</h3>
+                </div>
+                <div class="response-body">
+                    <p class="response-text" id="response-{{ model }}">Waiting for response...</p>
+                    <div class="audio-controls">
+                        <audio id="audio-{{ model }}" controls style="display: none;">
+                            <source id="audio-src-{{ model }}" src="" type="audio/mpeg">
+                        </audio>
+                        <button class="play-btn pixel-btn" id="play-{{ model }}" style="display: none;">
+                            ▶ Play
+                        </button>
+                    </div>
+                </div>
+                <!-- Colored subtitle overlay during playback -->
+                <div class="subtitle-overlay" id="subtitle-{{ model }}"
+                     style="background-color: {{ colors[model] }}; display: none;">
+                    <p class="subtitle-text"></p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Admin Controls -->
+        <div class="admin-panel">
+            <h3 class="pixel-text">Admin: Submit New Question</h3>
+            <form id="question-form">
+                <textarea id="new-question"
+                          placeholder="Enter your trolley problem question..."
+                          rows="4"
+                          required></textarea>
+                <button type="submit" class="pixel-btn submit-btn">Submit Question</button>
+            </form>
+            <div id="status-message" class="status-message"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/display.js') }}"></script>
+</body>
+</html>

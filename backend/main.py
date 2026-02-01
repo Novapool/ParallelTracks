@@ -4,7 +4,7 @@ import json
 import sys
 
 # --- Configuration ---
-OPENROUTER_API_KEY = "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"  # Replace with your OpenRouter API key
+OPENROUTER_API_KEY = "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"  
 ELEVENLABS_API_KEY = "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"
 RESPONSE_CACHE_FILE = "response_cache.json"
 AUDIO_OUTPUT_DIR = "../paralleltracks-webapp/public/audio"
