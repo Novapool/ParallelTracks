@@ -115,10 +115,18 @@ The perspective should be angled/isometric to show depth, with the trolley appea
             timeout=60  # Increased timeout for image generation
         )
         response.raise_for_status()
-        # The image is in the 'content' of the first choice's message, assuming it's a data URL
-        image_data_url = response.json()['choices'][0]['message']['content']
-        # The data URL is in the format "data:image/png;base64,iVBORw0KGgo..."
-        # We need to extract the base64 part.
+
+        # FIX: Images are in 'images' array, not 'content'
+        response_data = response.json()
+        images = response_data['choices'][0]['message'].get('images', [])
+
+        if not images:
+            print("Error: No images returned in response")
+            return None
+
+        # Extract base64 data from first image
+        image_data_url = images[0]['image_url']['url']
+
         if "base64," in image_data_url:
             return image_data_url.split("base64,")[1]
         else:
