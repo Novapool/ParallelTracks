@@ -7,8 +7,9 @@ import re
 import logging
 import uuid
 import requests
+import base64
 from elevenlabs import generate, save, set_api_key
-from ai_backend import get_ai_responses, MODELS
+from ai_backend import get_ai_responses, MODELS, generate_scenario_image
 
 load_dotenv()
 
@@ -45,8 +46,9 @@ if missing:
 
 set_api_key(ELEVENLABS_API_KEY)
 
-# Create audio directory on startup
+# Create static directories on startup
 os.makedirs('static/audio', exist_ok=True)
+os.makedirs('static/images', exist_ok=True)
 
 # Model colors (matching voting webapp)
 MODEL_COLORS = {
@@ -126,12 +128,30 @@ def submit_question():
         except Exception as e:
             logger.error(f"Error generating audio for {model_name}: {e}", exc_info=True)
             audio_files[model_name] = None
+    
+    # Step 4: Generate scenario image
+    image_url = None
+    try:
+        image_data = generate_scenario_image(question_text, OPENROUTER_API_KEY)
+        if image_data:
+            image_filename = f"scenario_{question_data['question_id']}_{uuid.uuid4().hex[:8]}.png"
+            image_path = os.path.join('static', 'images', image_filename)
+            
+            with open(image_path, "wb") as f:
+                f.write(base64.b64decode(image_data))
+            
+            image_url = f"/static/images/{image_filename}"
+
+    except Exception as e:
+        logger.error(f"Error generating scenario image: {e}", exc_info=True)
+
 
     return jsonify({
         "question_id": question_data['question_id'],
         "question_text": question_text,
         "responses": ai_responses,
-        "audio_files": audio_files
+        "audio_files": audio_files,
+        "image_url": image_url
     })
 
 @app.route('/static/audio/<path:filename>')
@@ -141,6 +161,15 @@ def serve_audio(filename):
     if not re.match(r'^[a-z0-9_-]+\.mp3$', filename):
         abort(404)
     return send_from_directory('static/audio', filename)
+
+@app.route('/static/images/<path:filename>')
+def serve_image(filename):
+    # Validate filename to prevent path traversal attacks
+    # Only allow alphanumeric, underscore, hyphen, and .png extension
+    if not re.match(r'^[a-zA-Z0-9_-]+\.png$', filename):
+        abort(404)
+    return send_from_directory('static/images', filename)
+
 
 if __name__ == '__main__':
     # Only enable debug mode if explicitly set in environment

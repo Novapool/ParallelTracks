@@ -50,6 +50,12 @@ document.getElementById('question-form').addEventListener('submit', async (e) =>
             }
         });
 
+        // Update scenario image if available
+        if (data.image_url) {
+            const scenarioImage = document.getElementById('scenario-image');
+            scenarioImage.src = data.image_url;
+        }
+
         // Success
         statusMessage.textContent = 'Question submitted successfully!';
         statusMessage.className = 'status-message success';
