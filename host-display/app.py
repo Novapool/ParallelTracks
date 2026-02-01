@@ -114,7 +114,22 @@ def submit_question():
     except Exception as e:
         return jsonify({"error": f"Failed to get AI responses: {str(e)}"}), 500
 
-    # Step 3: Generate audio for each response
+    # Step 3: Clean up old audio files before generating new ones
+    audio_dir = os.path.join('static', 'audio')
+    try:
+        if os.path.exists(audio_dir):
+            for filename in os.listdir(audio_dir):
+                if filename.endswith('.mp3'):
+                    file_path = os.path.join(audio_dir, filename)
+                    try:
+                        os.remove(file_path)
+                        logger.info(f"Deleted old audio file: {filename}")
+                    except Exception as e:
+                        logger.warning(f"Could not delete {filename}: {e}")
+    except Exception as e:
+        logger.warning(f"Error cleaning audio directory: {e}")
+
+    # Step 4: Generate audio for each response with simple filenames
     audio_files = {}
     for model_name, response_text in ai_responses.items():
         try:
@@ -127,21 +142,24 @@ def submit_question():
                 model="eleven_monolingual_v1"
             )
 
-            # Add unique identifier to prevent race conditions
-            audio_filename = f"{model_name}_{question_data['question_id']}_{uuid.uuid4().hex[:8]}.mp3"
+            # Use simple, predictable filename
+            audio_filename = f"{model_name}.mp3"
             audio_path = os.path.join('static', 'audio', audio_filename)
 
             # Ensure directory exists
             os.makedirs(os.path.dirname(audio_path), exist_ok=True)
             save(audio, audio_path)
 
-            audio_files[model_name] = f"/static/audio/{audio_filename}"
+            # Add cache-busting timestamp to force reload
+            import time
+            timestamp = int(time.time())
+            audio_files[model_name] = f"/static/audio/{audio_filename}?t={timestamp}"
 
         except Exception as e:
             logger.error(f"Error generating audio for {model_name}: {e}", exc_info=True)
             audio_files[model_name] = None
-    
-    # Step 4: Generate scenario image
+
+    # Step 5: Generate scenario image
     image_url = None
     image_error = None
 
@@ -176,9 +194,11 @@ def submit_question():
 def serve_audio(filename):
     # Validate filename to prevent path traversal attacks
     # Only allow alphanumeric, underscore, hyphen, and .mp3 extension
-    if not re.match(r'^[a-z0-9_-]+\.mp3$', filename):
+    # Strip query parameters for validation
+    base_filename = filename.split('?')[0]
+    if not re.match(r'^[a-z0-9_-]+\.mp3$', base_filename):
         abort(404)
-    return send_from_directory('static/audio', filename)
+    return send_from_directory('static/audio', base_filename)
 
 @app.route('/static/images/<path:filename>')
 def serve_image(filename):

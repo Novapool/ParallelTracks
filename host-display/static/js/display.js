@@ -109,13 +109,15 @@ document.getElementById('question-form').addEventListener('submit', async (e) =>
         // Reset audio state
         autoPlayEnabled = false;
         pendingAutoPlay = false;
-        // Keep audioUnlocked = true if already unlocked
+        // Reset audioUnlocked to force user to click unlock button each time
+        audioUnlocked = false;
         Object.keys(audioLoadState).forEach(key => {
             audioLoadState[key] = false;
         });
 
-        // Hide unlock panel
+        // Hide unlock panel initially - it will show when audio is ready
         document.getElementById('audio-unlock-panel').style.display = 'none';
+        console.log('Question submitted - waiting for audio to load');
 
         // Update each model's response
         Object.entries(data.responses).forEach(([model, responseText]) => {
@@ -126,16 +128,28 @@ document.getElementById('question-form').addEventListener('submit', async (e) =>
             // Setup audio if available
             if (data.audio_files[model]) {
                 const audioEl = document.getElementById(`audio-${model}`);
-                const audioSrc = document.getElementById(`audio-src-${model}`);
                 const playBtn = document.getElementById(`play-${model}`);
 
-                audioSrc.src = data.audio_files[model];
+                // Set src directly on audio element (simpler than using <source> child)
+                audioEl.src = data.audio_files[model];
                 audioEl.load();
+
+                console.log(`Setting audio src for ${model}:`, data.audio_files[model]);
 
                 // Track audio load state
                 audioEl.addEventListener('canplaythrough', () => {
+                    console.log(`Audio loaded for ${model}`);
                     audioLoadState[model] = true;
                     checkAndStartAutoPlay();
+                }, { once: true });
+
+                // Also try loadeddata as a fallback
+                audioEl.addEventListener('loadeddata', () => {
+                    if (!audioLoadState[model]) {
+                        console.log(`Audio data loaded for ${model} (fallback event)`);
+                        audioLoadState[model] = true;
+                        checkAndStartAutoPlay();
+                    }
                 }, { once: true });
 
                 playBtn.style.display = 'block';
@@ -176,7 +190,21 @@ document.getElementById('question-form').addEventListener('submit', async (e) =>
 function checkAndStartAutoPlay() {
     const allLoaded = PLAYBACK_ORDER.every(model => audioLoadState[model]);
 
-    if (!allLoaded || autoPlayEnabled) {
+    console.log('checkAndStartAutoPlay called:', {
+        allLoaded,
+        audioLoadState,
+        audioUnlocked,
+        autoPlayEnabled,
+        pendingAutoPlay
+    });
+
+    if (!allLoaded) {
+        console.log('Not all audio files loaded yet');
+        return;
+    }
+
+    if (autoPlayEnabled) {
+        console.log('Auto-play already enabled');
         return;
     }
 
@@ -194,6 +222,7 @@ function checkAndStartAutoPlay() {
 
     setTimeout(() => {
         if (autoPlayEnabled) {
+            console.log('Starting audio playback sequence');
             playAudioSequence(0);
         }
     }, AUTO_PLAY_DELAY);
@@ -201,33 +230,57 @@ function checkAndStartAutoPlay() {
 
 async function playAudioSequence(index) {
     if (!autoPlayEnabled || index >= PLAYBACK_ORDER.length) {
+        console.log('Auto-play sequence complete or disabled');
         return;
     }
 
     const model = PLAYBACK_ORDER[index];
     const audioEl = document.getElementById(`audio-${model}`);
 
+    console.log(`Playing ${model} (${index + 1}/${PLAYBACK_ORDER.length})`);
+
     if (!audioEl || !audioEl.src) {
+        console.warn(`Skipping ${model} - no audio element or src`);
         playAudioSequence(index + 1);
         return;
     }
 
     try {
-        await playAudio(model, true);
-
-        // Chain to next audio when this ends
-        const originalOnended = audioEl.onended;
-        audioEl.onended = () => {
-            if (originalOnended) originalOnended();
-
-            if (autoPlayEnabled) {
+        // Set up the chain BEFORE playing (important!)
+        const handleEnded = () => {
+            console.log(`${model} finished playing`);
+            if (autoPlayEnabled && index + 1 < PLAYBACK_ORDER.length) {
                 setTimeout(() => {
                     playAudioSequence(index + 1);
                 }, 500);
             }
         };
+
+        // Play the audio with subtitle
+        const subtitleEl = document.getElementById(`subtitle-${model}`);
+        const subtitleText = subtitleEl.querySelector('.subtitle-text');
+        const responseText = document.getElementById(`response-${model}`).textContent;
+
+        // Show subtitle
+        subtitleText.textContent = responseText;
+        subtitleEl.style.display = 'block';
+
+        // Set up ended handler
+        audioEl.onended = () => {
+            subtitleEl.style.display = 'none';
+            handleEnded();
+        };
+
+        // Play
+        await audioEl.play();
+        console.log(`${model} started playing`);
+
     } catch (error) {
         console.error(`Auto-play failed for ${model}:`, error);
+
+        // Hide subtitle on error
+        const subtitleEl = document.getElementById(`subtitle-${model}`);
+        if (subtitleEl) subtitleEl.style.display = 'none';
 
         // If blocked by browser, show unlock panel again
         if (error.name === 'NotAllowedError') {
@@ -305,29 +358,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const unlockPanel = document.getElementById('audio-unlock-panel');
 
     unlockBtn.addEventListener('click', async () => {
+        console.log('Audio unlock button clicked');
+
         // Unlock all audio elements by playing/pausing them
         const unlockPromises = PLAYBACK_ORDER.map(async (model) => {
             const audioEl = document.getElementById(`audio-${model}`);
-            if (audioEl && audioEl.src) {
+            const hasSrc = audioEl?.src && audioEl.src !== '' && !audioEl.src.endsWith('/');
+
+            console.log(`Unlocking ${model}:`, {
+                hasElement: !!audioEl,
+                hasSrc: hasSrc,
+                src: audioEl?.src,
+                readyState: audioEl?.readyState
+            });
+
+            if (audioEl && hasSrc) {
                 try {
                     await audioEl.play();
                     audioEl.pause();
                     audioEl.currentTime = 0;
+                    console.log(`Successfully unlocked ${model}`);
                     return true;
                 } catch (e) {
                     console.warn(`Failed to unlock ${model}:`, e);
                     return false;
                 }
+            } else {
+                console.warn(`Cannot unlock ${model} - audio not ready yet`);
+                return false;
             }
-            return false;
         });
 
-        await Promise.all(unlockPromises);
+        const results = await Promise.all(unlockPromises);
+        console.log('Unlock results:', results);
+
         audioUnlocked = true;
         unlockPanel.style.display = 'none';
 
         // Start auto-play if it was pending
         if (pendingAutoPlay && !autoPlayEnabled) {
+            console.log('Starting auto-play after unlock');
             checkAndStartAutoPlay();
         }
     });
