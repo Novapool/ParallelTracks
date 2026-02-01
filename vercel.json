@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd paralleltracks-webapp && npm run build",
+  "devCommand": "cd paralleltracks-webapp && npm run dev",
+  "installCommand": "cd paralleltracks-webapp && npm install",
+  "framework": null,
+  "outputDirectory": "paralleltracks-webapp/.next"
+}
