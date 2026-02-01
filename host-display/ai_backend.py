@@ -93,7 +93,22 @@ def generate_scenario_image(question_text: str, api_key: str) -> Optional[str]:
                 "messages": [
                     {
                         "role": "user",
-                        "content": f"A cartoon illustration of the trolley problem. The scenario is: {question_text}"
+                "content": f"""A simple black and white line drawing illustration in a minimalist sketch style depicting a trolley problem ethical dilemma. The scene should be drawn with clean, continuous black ink lines on a white background, using a hand-drawn aesthetic with slight imperfections that give it an authentic sketched quality.
+The composition features:
+
+A trolley/streetcar on the left side, drawn with simple geometric shapes and minimal architectural details (windows represented as small arch shapes, basic rectangular body with wheels)
+Railroad tracks drawn as two parallel lines extending diagonally across the image, creating perspective depth
+A track junction/switch where the rails diverge into two paths
+Stick figure-style people drawn with basic circular heads, simple curved lines for bodies and limbs, maintaining a cartoon-like simplicity
+One person operating the switch lever (shown pulling or pushing a simple line representing the lever)
+{question_text}
+Figures should have minimal facial features (just simple dots or curves for eyes/mouth)
+No shading, no color, no cross-hatching - only clean outline work
+Slightly uneven, organic line quality that suggests hand-drawing rather than computer precision
+Empty white background with no environmental details, ground texture, or scenery
+The overall style should resemble a quick philosophical thought experiment sketch or diagram from a textbook
+
+The perspective should be angled/isometric to show depth, with the trolley appearing smaller in the background and the figures distributed along the diverging tracks to clearly illustrate the moral dilemma."""
                     }
                 ]
             },
