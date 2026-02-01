@@ -68,8 +68,12 @@ export default function VotingPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="pixel-loading mb-4 text-pixel-accent">
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p className="text-pixel-text-secondary font-retro text-xl">Loading...</p>
         </div>
       </div>
     );
@@ -78,8 +82,8 @@ export default function VotingPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-          <p className="text-red-800 font-medium">Error: {error}</p>
+        <div className="bg-[#3d0f28] border-4 border-pixel-error p-6 max-w-md">
+          <p className="text-pixel-error font-retro text-lg">Error: {error}</p>
         </div>
       </div>
     );
@@ -89,15 +93,15 @@ export default function VotingPage() {
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-3xl font-pixel text-pixel-text mb-4">
             ParallelTracks
           </h1>
-          <p className="text-gray-600">
+          <p className="text-lg font-retro text-pixel-text-secondary mb-4">
             Vote on AI responses to trolley problems
           </p>
           <Link
             href="/leaderboard"
-            className="inline-block mt-4 text-blue-600 hover:text-blue-700 font-medium"
+            className="inline-block text-pixel-accent hover:brightness-110 font-retro text-lg"
           >
             View Leaderboard →
           </Link>

@@ -11,19 +11,19 @@ export function QuestionDisplay({ question }: QuestionDisplayProps) {
     <Card className="mb-6">
       {question ? (
         <div>
-          <h2 className="text-lg md:text-xl font-semibold text-gray-700 mb-2">
+          <h2 className="text-sm font-pixel text-pixel-accent mb-4">
             Current Question
           </h2>
-          <p className="text-xl md:text-2xl text-gray-900 leading-relaxed">
+          <p className="text-xl font-retro text-pixel-text leading-relaxed cursor-blink">
             {question}
           </p>
         </div>
       ) : (
         <div className="text-center py-8">
-          <p className="text-xl md:text-2xl text-gray-500">
+          <p className="text-xl font-retro text-pixel-text-secondary">
             Waiting for the next question...
           </p>
-          <p className="text-sm text-gray-400 mt-2">
+          <p className="text-base font-retro text-pixel-text-secondary mt-2">
             Check back soon!
           </p>
         </div>

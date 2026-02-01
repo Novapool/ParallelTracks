@@ -36,10 +36,10 @@ export function VoteResults({ voteCounts }: VoteResultsProps) {
   if (totalVotes === 0) {
     return (
       <Card>
-        <h3 className="text-lg font-semibold text-gray-700 mb-3">
+        <h3 className="text-base font-pixel text-pixel-accent mb-3">
           Live Results
         </h3>
-        <p className="text-gray-500 text-center py-4">
+        <p className="text-pixel-text-secondary font-retro text-center py-4">
           No votes yet. Be the first to vote!
         </p>
       </Card>
@@ -49,10 +49,10 @@ export function VoteResults({ voteCounts }: VoteResultsProps) {
   return (
     <Card>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-700">
+        <h3 className="text-base font-pixel text-pixel-accent">
           Live Results
         </h3>
-        <span className="text-sm text-gray-500">
+        <span className="text-base font-retro text-pixel-text-secondary">
           {totalVotes} {totalVotes === 1 ? 'vote' : 'votes'}
         </span>
       </div>
@@ -63,17 +63,17 @@ export function VoteResults({ voteCounts }: VoteResultsProps) {
 
           return (
             <div key={model} className="space-y-1">
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-medium text-gray-700">
+              <div className="flex justify-between items-center">
+                <span className="font-retro text-pixel-text">
                   {AI_MODEL_LABELS[model]}
                 </span>
-                <span className="text-gray-600">
+                <span className="font-retro text-pixel-text-secondary">
                   {count} ({percentage}%)
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-pixel-bg-tertiary border-2 border-pixel-border h-4 overflow-hidden">
                 <div
-                  className={`h-full ${getBarColor(model)} transition-all duration-500 ease-out`}
+                  className={`h-full ${getBarColor(model)} border-r-2 border-pixel-border transition-all duration-300 ease-pixel`}
                   style={{ width: `${percentage}%` }}
                 />
               </div>
