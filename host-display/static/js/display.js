@@ -5,6 +5,8 @@ const QUESTION_TEMPLATE = 'You must choose between two bad outcomes: allowing a 
 const PLAYBACK_ORDER = ['anthropic', 'gpt', 'gemini', 'grok', 'deepseek'];
 const AUTO_PLAY_DELAY = 1500; // ms
 let autoPlayEnabled = false;
+let audioUnlocked = false;        // Track if user unlocked audio
+let pendingAutoPlay = false;      // Track if waiting for unlock
 const audioLoadState = {
     anthropic: false,
     gpt: false,
@@ -106,9 +108,14 @@ document.getElementById('question-form').addEventListener('submit', async (e) =>
 
         // Reset audio state
         autoPlayEnabled = false;
+        pendingAutoPlay = false;
+        // Keep audioUnlocked = true if already unlocked
         Object.keys(audioLoadState).forEach(key => {
             audioLoadState[key] = false;
         });
+
+        // Hide unlock panel
+        document.getElementById('audio-unlock-panel').style.display = 'none';
 
         // Update each model's response
         Object.entries(data.responses).forEach(([model, responseText]) => {
@@ -139,9 +146,14 @@ document.getElementById('question-form').addEventListener('submit', async (e) =>
         });
 
         // Update scenario image if available
+        const scenarioImage = document.getElementById('scenario-image');
+
         if (data.image_url) {
-            const scenarioImage = document.getElementById('scenario-image');
             scenarioImage.src = data.image_url;
+            scenarioImage.alt = 'Generated scenario illustration';
+        } else if (data.image_error) {
+            console.warn('Image generation failed:', data.image_error);
+            // Keep default trolley image - optionally notify admin
         }
 
         // Success - reset form
@@ -164,19 +176,30 @@ document.getElementById('question-form').addEventListener('submit', async (e) =>
 function checkAndStartAutoPlay() {
     const allLoaded = PLAYBACK_ORDER.every(model => audioLoadState[model]);
 
-    if (allLoaded && !autoPlayEnabled) {
-        autoPlayEnabled = true;
-        console.log('All audio loaded. Starting auto-play in', AUTO_PLAY_DELAY, 'ms');
-
-        setTimeout(() => {
-            if (autoPlayEnabled) {
-                playAudioSequence(0);
-            }
-        }, AUTO_PLAY_DELAY);
+    if (!allLoaded || autoPlayEnabled) {
+        return;
     }
+
+    // Show unlock panel if audio not yet unlocked
+    if (!audioUnlocked) {
+        pendingAutoPlay = true;
+        document.getElementById('audio-unlock-panel').style.display = 'block';
+        console.log('Auto-play blocked - user interaction required');
+        return;
+    }
+
+    autoPlayEnabled = true;
+    pendingAutoPlay = false;
+    console.log('Starting auto-play in', AUTO_PLAY_DELAY, 'ms');
+
+    setTimeout(() => {
+        if (autoPlayEnabled) {
+            playAudioSequence(0);
+        }
+    }, AUTO_PLAY_DELAY);
 }
 
-function playAudioSequence(index) {
+async function playAudioSequence(index) {
     if (!autoPlayEnabled || index >= PLAYBACK_ORDER.length) {
         return;
     }
@@ -189,47 +212,72 @@ function playAudioSequence(index) {
         return;
     }
 
-    // Use existing playAudio for subtitle handling
-    playAudio(model, true);
+    try {
+        await playAudio(model, true);
 
-    // Chain to next audio when this ends
-    const originalOnended = audioEl.onended;
-    audioEl.onended = () => {
-        if (originalOnended) originalOnended();
+        // Chain to next audio when this ends
+        const originalOnended = audioEl.onended;
+        audioEl.onended = () => {
+            if (originalOnended) originalOnended();
 
-        if (autoPlayEnabled) {
-            setTimeout(() => {
-                playAudioSequence(index + 1);
-            }, 500);
+            if (autoPlayEnabled) {
+                setTimeout(() => {
+                    playAudioSequence(index + 1);
+                }, 500);
+            }
+        };
+    } catch (error) {
+        console.error(`Auto-play failed for ${model}:`, error);
+
+        // If blocked by browser, show unlock panel again
+        if (error.name === 'NotAllowedError') {
+            audioUnlocked = false;
+            pendingAutoPlay = true;
+            document.getElementById('audio-unlock-panel').style.display = 'block';
+            autoPlayEnabled = false;
+        } else {
+            // Skip to next on other errors
+            playAudioSequence(index + 1);
         }
-    };
+    }
 }
 
 // Audio playback with subtitle display
 function playAudio(model, isAutoPlay = false) {
-    // Disable auto-sequence if manual play
-    if (!isAutoPlay) {
-        autoPlayEnabled = false;
-    }
+    return new Promise((resolve, reject) => {
+        if (!isAutoPlay) {
+            autoPlayEnabled = false;
+        }
 
-    const audioEl = document.getElementById(`audio-${model}`);
-    const subtitleEl = document.getElementById(`subtitle-${model}`);
-    const subtitleText = subtitleEl.querySelector('.subtitle-text');
-    const responseText = document.getElementById(`response-${model}`).textContent;
+        const audioEl = document.getElementById(`audio-${model}`);
+        const subtitleEl = document.getElementById(`subtitle-${model}`);
+        const subtitleText = subtitleEl.querySelector('.subtitle-text');
+        const responseText = document.getElementById(`response-${model}`).textContent;
 
-    // Show subtitle with full text
-    subtitleText.textContent = responseText;
-    subtitleEl.style.display = 'block';
+        // Show subtitle
+        subtitleText.textContent = responseText;
+        subtitleEl.style.display = 'block';
 
-    // Play audio
-    audioEl.play();
-
-    // For manual play, set simple onended
-    if (!isAutoPlay) {
-        audioEl.onended = () => {
+        // Setup handlers
+        const handleEnded = () => {
             subtitleEl.style.display = 'none';
+            resolve();
         };
-    }
+
+        const handleError = (error) => {
+            subtitleEl.style.display = 'none';
+            reject(error);
+        };
+
+        audioEl.onended = handleEnded;
+
+        // Play and handle promise rejection
+        const playPromise = audioEl.play();
+
+        if (playPromise !== undefined) {
+            playPromise.catch(handleError);
+        }
+    });
 }
 
 // Stop all audio when one starts playing
@@ -248,5 +296,39 @@ document.querySelectorAll('audio').forEach(audio => {
                 subtitle.style.display = 'none';
             }
         });
+    });
+});
+
+// Setup audio unlock button
+document.addEventListener('DOMContentLoaded', () => {
+    const unlockBtn = document.getElementById('audio-unlock-btn');
+    const unlockPanel = document.getElementById('audio-unlock-panel');
+
+    unlockBtn.addEventListener('click', async () => {
+        // Unlock all audio elements by playing/pausing them
+        const unlockPromises = PLAYBACK_ORDER.map(async (model) => {
+            const audioEl = document.getElementById(`audio-${model}`);
+            if (audioEl && audioEl.src) {
+                try {
+                    await audioEl.play();
+                    audioEl.pause();
+                    audioEl.currentTime = 0;
+                    return true;
+                } catch (e) {
+                    console.warn(`Failed to unlock ${model}:`, e);
+                    return false;
+                }
+            }
+            return false;
+        });
+
+        await Promise.all(unlockPromises);
+        audioUnlocked = true;
+        unlockPanel.style.display = 'none';
+
+        // Start auto-play if it was pending
+        if (pendingAutoPlay && !autoPlayEnabled) {
+            checkAndStartAutoPlay();
+        }
     });
 });

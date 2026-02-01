@@ -143,19 +143,24 @@ def submit_question():
     
     # Step 4: Generate scenario image
     image_url = None
+    image_error = None
+
     try:
         image_data = generate_scenario_image(question_text, OPENROUTER_API_KEY)
         if image_data:
             image_filename = f"scenario_{question_data['question_id']}_{uuid.uuid4().hex[:8]}.png"
             image_path = os.path.join('static', 'images', image_filename)
-            
+
             with open(image_path, "wb") as f:
                 f.write(base64.b64decode(image_data))
-            
+
             image_url = f"/static/images/{image_filename}"
+        else:
+            image_error = "Image generation returned no data"
 
     except Exception as e:
         logger.error(f"Error generating scenario image: {e}", exc_info=True)
+        image_error = str(e)
 
 
     return jsonify({
@@ -163,7 +168,8 @@ def submit_question():
         "question_text": question_text,
         "responses": ai_responses,
         "audio_files": audio_files,
-        "image_url": image_url
+        "image_url": image_url,
+        "image_error": image_error
     })
 
 @app.route('/static/audio/<path:filename>')
@@ -177,8 +183,11 @@ def serve_audio(filename):
 @app.route('/static/images/<path:filename>')
 def serve_image(filename):
     # Validate filename to prevent path traversal attacks
-    # Only allow alphanumeric, underscore, hyphen, and .png extension
-    if not re.match(r'^[a-zA-Z0-9_-]+\.png$', filename):
+    # Allow subdirectories (like logos/) but prevent .. and absolute paths
+    if '..' in filename or filename.startswith('/'):
+        abort(404)
+    # Only allow alphanumeric, underscore, hyphen, forward slash, and .png extension
+    if not re.match(r'^[a-zA-Z0-9_/-]+\.png$', filename):
         abort(404)
     return send_from_directory('static/images', filename)
 
