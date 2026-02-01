@@ -1,4 +1,4 @@
-export type AIModel = 'google/gemini-pro' | 'openai/gpt-3.5-turbo' | 'anthropic/claude-2';
+export type AIModel = 'anthropic' | 'gpt' | 'gemini' | 'grok' | 'deepseek';
 
 export interface ActiveQuestion {
   id: string;

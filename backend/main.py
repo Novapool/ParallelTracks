@@ -9,12 +9,17 @@ ELEVENLABS_API_KEY = "sk-or-v1-9c86dfd566af822793dee980a40153369dd05fd382c0dfb45
 RESPONSE_CACHE_FILE = "response_cache.json"
 AUDIO_OUTPUT_DIR = "../paralleltracks-webapp/public/audio"
 
+# Mapping from simple names to OpenRouter model IDs
+MODEL_MAPPING = {
+    "anthropic": "anthropic/claude-3.5-sonnet",
+    "gpt": "openai/gpt-3.5-turbo",
+    "gemini": "google/gemini-2.5-pro",
+    "grok": "x-ai/grok-3",
+    "deepseek": "deepseek/deepseek-chat"
+}
+
 # A selection of models to query
-MODELS = [
-    "google/gemini-pro",
-    "openai/gpt-3.5-turbo",
-    "anthropic/claude-2",
-]
+MODELS = ["anthropic", "gpt", "gemini", "grok", "deepseek"]
 
 # --- Helper Functions ---
 
@@ -44,15 +49,19 @@ def cache_response(dilemma_id, model, response_text):
         f.seek(0)
         json.dump(cache, f, indent=4)
 
-def get_openrouter_response(model, dilemma_text):
-    """Queries a single model via OpenRouter."""
+def get_openrouter_response(simple_model_name, dilemma_text):
+    """Queries a single model via OpenRouter using the mapped full ID."""
+    full_model_id = MODEL_MAPPING.get(simple_model_name)
+    if not full_model_id:
+        raise ValueError(f"Unknown model: {simple_model_name}")
+
     response = requests.post(
         url="https://openrouter.ai/api/v1/chat/completions",
         headers={
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         },
         data=json.dumps({
-            "model": model,
+            "model": full_model_id,
             "messages": [
                 {"role": "user", "content": dilemma_text}
             ]
