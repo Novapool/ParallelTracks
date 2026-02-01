@@ -1,4 +1,12 @@
+# Environment file
 .env
+
+# Keep example file tracked
+!.env.example
+
+# Python cache
 *.pyc
 __pycache__/
+
+# Audio files (generated at runtime)
 static/audio/*.mp3

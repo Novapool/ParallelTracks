@@ -91,8 +91,8 @@ body {
 /* Responses Grid */
 .responses-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
     margin-bottom: 40px;
 }
 
@@ -102,22 +102,29 @@ body {
     border-radius: 8px;
     overflow: hidden;
     position: relative;
+    min-width: 0; /* Allow shrinking */
 }
 
 .response-header {
-    padding: 15px;
+    padding: 12px;
     text-align: center;
 }
 
+.response-header .pixel-text {
+    font-size: 9px;
+}
+
 .response-body {
-    padding: 20px;
+    padding: 15px;
 }
 
 .response-text {
-    font-size: 11px;
-    line-height: 1.6;
+    font-size: 10px;
+    line-height: 1.5;
     margin-bottom: 15px;
-    min-height: 150px;
+    min-height: 120px;
+    max-height: 180px;
+    overflow-y: auto;
 }
 
 /* Audio Controls */
@@ -130,11 +137,12 @@ body {
     background: var(--text-accent);
     color: var(--bg-primary);
     border: 3px solid var(--bg-primary);
-    padding: 10px 20px;
+    padding: 8px 15px;
     cursor: pointer;
     font-family: 'Press Start 2P', cursive;
-    font-size: 10px;
+    font-size: 9px;
     transition: all 0.3s;
+    white-space: nowrap;
 }
 
 .play-btn:hover {
@@ -149,15 +157,18 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 15px;
+    padding: 12px;
     opacity: 0.95;
     text-align: center;
+    max-height: 50%;
+    overflow-y: auto;
 }
 
 .subtitle-text {
-    font-size: 11px;
+    font-size: 10px;
     color: white;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    line-height: 1.4;
 }
 
 /* Admin Panel */
@@ -166,6 +177,105 @@ body {
     border: 4px solid var(--border-color);
     padding: 30px;
     margin-top: 40px;
+}
+
+/* Template Display */
+.template-display {
+    background: var(--bg-primary);
+    border: 3px dashed var(--text-accent);
+    padding: 20px;
+    margin-bottom: 30px;
+    border-radius: 4px;
+}
+
+.template-text {
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text-primary);
+}
+
+.blank-placeholder {
+    color: var(--text-accent);
+    background: rgba(0, 255, 159, 0.1);
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+/* Form Fields */
+.form-field {
+    margin-bottom: 25px;
+}
+
+.field-label {
+    display: block;
+    font-size: 10px;
+    color: var(--text-accent);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-field textarea {
+    width: 100%;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 3px solid var(--border-color);
+    padding: 15px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 11px;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+.form-field textarea:focus {
+    outline: none;
+    border-color: var(--text-accent);
+}
+
+.form-field textarea::placeholder {
+    color: rgba(238, 238, 238, 0.4);
+}
+
+/* Character Counter */
+.char-counter {
+    text-align: right;
+    font-size: 9px;
+    color: rgba(238, 238, 238, 0.6);
+    margin-top: 5px;
+}
+
+.char-counter.warning {
+    color: #ffaa00;
+}
+
+.char-counter.error {
+    color: #ff5555;
+}
+
+/* Question Preview */
+.question-preview {
+    background: rgba(0, 255, 159, 0.05);
+    border: 3px solid rgba(0, 255, 159, 0.3);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.preview-title {
+    font-size: 10px;
+    margin-bottom: 15px;
+}
+
+.preview-content {
+    font-size: 11px;
+    line-height: 1.8;
+    color: var(--text-primary);
+}
+
+.preview-blank {
+    color: rgba(0, 255, 159, 0.5);
+    font-style: italic;
 }
 
 #new-question {
@@ -219,4 +329,23 @@ body {
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1200px) {
+    .responses-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .responses-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .responses-grid {
+        grid-template-columns: 1fr;
+    }
 }

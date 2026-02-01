@@ -64,11 +64,57 @@
         <!-- Admin Controls -->
         <div class="admin-panel">
             <h3 class="pixel-text">Admin: Submit New Question</h3>
+
+            <!-- Template Display -->
+            <div class="template-display">
+                <p class="template-text">
+                    You must choose between two bad outcomes: allowing a runaway trolley to
+                    <span class="blank-placeholder">[BLANK 1]</span>
+                    or pulling a lever to divert it to a side track where it will
+                    <span class="blank-placeholder">[BLANK 2]</span>.
+                </p>
+            </div>
+
             <form id="question-form">
-                <textarea id="new-question"
-                          placeholder="Enter your trolley problem question..."
-                          rows="4"
-                          required></textarea>
+                <!-- Outcome 1 -->
+                <div class="form-field">
+                    <label class="field-label" for="outcome1">OUTCOME 1: DO NOTHING</label>
+                    <textarea id="outcome1"
+                              placeholder="kill 5 innocent workers on the main track"
+                              rows="2"
+                              minlength="3"
+                              maxlength="500"
+                              required></textarea>
+                    <div class="char-counter">
+                        <span id="counter1">0</span> / 500
+                    </div>
+                </div>
+
+                <!-- Outcome 2 -->
+                <div class="form-field">
+                    <label class="field-label" for="outcome2">OUTCOME 2: PULL LEVER</label>
+                    <textarea id="outcome2"
+                              placeholder="kill 1 innocent person on the side track"
+                              rows="2"
+                              minlength="3"
+                              maxlength="500"
+                              required></textarea>
+                    <div class="char-counter">
+                        <span id="counter2">0</span> / 500
+                    </div>
+                </div>
+
+                <!-- Live Preview -->
+                <div class="question-preview">
+                    <h4 class="pixel-text preview-title">Preview</h4>
+                    <p id="preview-text" class="preview-content">
+                        You must choose between two bad outcomes: allowing a runaway trolley to
+                        <span class="preview-blank">[...]</span>
+                        or pulling a lever to divert it to a side track where it will
+                        <span class="preview-blank">[...]</span>.
+                    </p>
+                </div>
+
                 <button type="submit" class="pixel-btn submit-btn">Submit Question</button>
             </form>
             <div id="status-message" class="status-message"></div>

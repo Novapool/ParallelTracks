@@ -11,6 +11,101 @@ ParallelTracks allows users to vote on AI model responses to ethical dilemmas (t
 - **Grok** (xAI)
 - **DeepSeek** (DeepSeek)
 
+## Quick Start
+
+### Prerequisites
+
+- Python 3.8+ (for host display)
+- Node.js 18+ (for voting webapp)
+- [Supabase account](https://supabase.com) with a project set up
+- [OpenRouter API key](https://openrouter.ai/) (for AI responses)
+- [ElevenLabs API key](https://elevenlabs.io/) (for text-to-speech)
+
+### 1. Clone and Setup Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/ParallelTracks.git
+cd ParallelTracks
+```
+
+### 2. Setup Host Display (Game Screen)
+
+The host display shows questions, AI responses, and audio playback on a large screen.
+
+```bash
+# Navigate to host display
+cd host-display
+
+# Install Python dependencies
+pip3 install -r requirements.txt
+
+# Copy environment template and configure
+cp .env.example .env
+```
+
+**Edit `host-display/.env` and add your API keys:**
+
+- `OPENROUTER_API_KEY`: Get from [OpenRouter](https://openrouter.ai/)
+- `ELEVENLABS_API_KEY`: Get from [ElevenLabs](https://elevenlabs.io/)
+- `SUPABASE_URL`: Your Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY`: From [Supabase Dashboard → Settings → API](https://supabase.com/dashboard/project/xihfenboeoypghatehhl/settings/api)
+
+**Run the host display:**
+
+```bash
+python3 app.py
+```
+
+Open http://localhost:8000 to see the game display.
+
+### 3. Setup Voting Webapp (User Interface)
+
+The webapp allows users to vote on AI responses via their phones.
+
+```bash
+# Navigate to webapp (from project root)
+cd paralleltracks-webapp
+
+# Install Node dependencies
+npm install
+
+# Copy environment template and configure
+cp .env.example .env.local
+```
+
+**Edit `paralleltracks-webapp/.env.local` and add:**
+
+- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: From [Supabase Dashboard → Settings → API](https://supabase.com/dashboard/project/xihfenboeoypghatehhl/settings/api)
+
+**Run the webapp:**
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000 to see the voting interface.
+
+### 4. Test the Full Flow
+
+1. **Start both applications** (host display on :8000, webapp on :3000)
+2. **Submit a question** via the admin form at http://localhost:8000
+   - Example: "Should you flip the switch to save five people at the cost of one?"
+3. **Watch AI responses generate** - All 5 models will respond with colored cards
+4. **Play audio responses** - Click play buttons to hear TTS with colored subtitles
+5. **Vote on webapp** - Open http://localhost:3000 and vote for your favorite response
+6. **See live updates** - Vote counts update in real-time on the host display
+
+### How It Works
+
+1. **Admin submits question** → Question sent to Supabase → AI models generate responses
+2. **Responses displayed** → Host display shows all 5 AI responses with colored cards
+3. **Text-to-speech** → ElevenLabs converts responses to audio files
+4. **Users vote** → Scan QR code (or visit webapp) → Vote for favorite AI response
+5. **Live updates** → Supabase Realtime pushes vote counts to host display
+6. **Leaderboard** → Track which AI model is winning over time
+
 ## Architecture
 
 ### Frontend Flow
@@ -169,23 +264,33 @@ All tables have Realtime enabled for live updates:
 - **[docs/database.types.ts](docs/database.types.ts)**: TypeScript types for Supabase integration
 - **README.md**: This file
 
-## Getting Started
+## API Integration Guide
 
-### For Game Developers
+If you're building custom integrations or want to understand the API layer:
 
-1. Get the service role key from Supabase Dashboard
-2. Use `create_new_question` to start a new question round
-3. Display question + AI answers + QR code on screen
-4. Subscribe to `votes` table via Realtime for live vote counts
-5. Move to next question by calling `create_new_question` again
+### For Game/Display Developers
 
-### For Webapp Developers
+When building custom game displays:
 
-1. Generate voter session ID: `crypto.randomUUID()` (store in localStorage)
-2. On load: Call `get_current_state` to fetch active question
-3. Display question text + 5 voting buttons
-4. On vote: Call `submit_vote` with question_id, ai_model, session_id
-5. (Optional) Subscribe to Realtime for live vote updates
+1. **Get API keys** from Supabase Dashboard (service role key)
+2. **Create questions** via `POST /functions/v1/create_new_question`
+3. **Subscribe to votes** via Supabase Realtime for live vote counts
+4. **Display AI responses** with colored cards matching each model
+5. **Handle audio playback** using the generated TTS files
+
+See [host-display/README.md](host-display/README.md) for implementation details.
+
+### For Webapp/Client Developers
+
+When building custom voting interfaces:
+
+1. **Generate session ID**: `crypto.randomUUID()` and store in localStorage
+2. **Fetch active question**: `GET /functions/v1/get_current_state`
+3. **Display voting UI** with 5 buttons (one per AI model)
+4. **Submit votes**: `POST /functions/v1/submit_vote` with question_id, ai_model, session_id
+5. **Subscribe to Realtime** (optional) for live vote updates
+
+See [paralleltracks-webapp/README.md](paralleltracks-webapp/README.md) for implementation details.
 
 ## Project URLs
 
@@ -194,60 +299,110 @@ All tables have Realtime enabled for live updates:
 
 ## Development
 
-### Prerequisites
+See the **[Quick Start](#quick-start)** section above for setup instructions.
 
-- Supabase account
-- Service role key (for testing question creation)
-- Anonymous key (for testing voting)
+### Running in Development Mode
+
+**Host Display:**
+```bash
+cd host-display
+python3 app.py  # Runs on http://localhost:8000
+```
+
+**Voting Webapp:**
+```bash
+cd paralleltracks-webapp
+npm run dev  # Runs on http://localhost:3000
+```
 
 ### Testing
 
 See **[docs/TESTING.md](docs/TESTING.md)** for comprehensive testing guide.
 
-Quick test:
+**Quick API test:**
 ```bash
-# Get current state
+# Get current state (replace with your anon key)
 curl 'https://xihfenboeoypghatehhl.supabase.co/functions/v1/get_current_state' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpaGZlbmJvZW95cGdoYXRlaGhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4ODY0MjMsImV4cCI6MjA4NTQ2MjQyM30.pAhg9M7o8Yg-p-lsqsOqL8LrwsjNg1xebYydwGsgOuI'
+  -H 'Authorization: Bearer YOUR_ANON_KEY'
 ```
+
+### Troubleshooting
+
+**"Missing required environment variables"**
+- Ensure you've copied `.env.example` to `.env` (host-display) or `.env.local` (webapp)
+- Verify all required API keys are set in your `.env` files
+
+**"Failed to submit question to Supabase"**
+- Check your `SUPABASE_SERVICE_ROLE_KEY` is correct
+- Verify your Supabase project is active
+
+**"Error querying AI models"**
+- Verify your `OPENROUTER_API_KEY` is valid
+- Check OpenRouter account has credits
+
+**Audio doesn't play**
+- Verify `ELEVENLABS_API_KEY` is set correctly
+- Check browser console for errors
+- Ensure audio files are generated in `host-display/static/audio/`
+
+**Port conflicts**
+- Host display uses port 8000 (set `PORT=` in .env to change)
+- Webapp uses port 3000 (Next.js default)
 
 ## Implementation Status
 
-✅ **Phase 1**: Database Setup
-- Tables: questions, votes, ai_leaderboard
-- Foreign keys and constraints
-- Indexes on frequently queried columns
+### Backend (Supabase)
 
-✅ **Phase 2**: Realtime & RLS
-- Realtime enabled on all tables
-- RLS policies configured
-- Security advisors reviewed
+✅ **Database Setup**
+- Tables: questions, votes, ai_leaderboard with proper constraints
+- Row Level Security (RLS) policies configured
+- Realtime enabled for live updates
 
-✅ **Phase 3**: SQL Functions
-- `tally_votes_and_update_leaderboard` function
+✅ **Edge Functions**
+- `create_new_question` - Creates questions and closes previous ones
+- `submit_vote` - Handles anonymous voting with spam prevention
+- `get_current_state` - Returns active question, vote counts, and leaderboard
 
-✅ **Phase 4**: Edge Functions
-- `create_new_question` (service role)
-- `submit_vote` (anonymous)
-- `get_current_state` (anonymous)
+✅ **SQL Functions**
+- `tally_votes_and_update_leaderboard` - Aggregates results when questions close
 
-✅ **Phase 5**: Initialize Data
-- Leaderboard initialized with 5 AI models
+### Frontend Applications
 
-✅ **Phase 6**: TypeScript Types
-- docs/database.types.ts generated
+✅ **Host Display (host-display/)**
+- Flask application with admin form for submitting questions
+- AI integration via OpenRouter (5 models: Anthropic, GPT, Gemini, Grok, DeepSeek)
+- Text-to-speech via ElevenLabs with colored subtitles
+- Audio playback with automatic file cleanup
+- Rate limiting and security features
+- Environment-based configuration (.env)
 
-✅ **Phase 7**: API Documentation
-- docs/API.md with complete examples
-- docs/TESTING.md with verification steps
+✅ **Voting Webapp (paralleltracks-webapp/)**
+- Next.js application with Supabase integration
+- Anonymous voting with session ID tracking
+- Real-time vote count updates
+- Responsive mobile-first design
+- QR code generation for easy mobile access
 
-## Next Steps
+### Documentation
 
-1. **Game Implementation**: Build local game display with QR code generation
-2. **Webapp Implementation**: Build voting interface with Realtime subscriptions
-3. **AI Integration**: Connect to actual AI APIs to generate answers
-4. **UI/UX**: Design voting interface and game display
-5. **Analytics**: Add vote analytics and visualization
+✅ **Complete Documentation**
+- API reference (docs/API.md)
+- Testing guide (docs/TESTING.md)
+- Quick reference (docs/QUICK_REFERENCE.md)
+- TypeScript types (docs/database.types.ts)
+- README with quick start guide
+
+## Features
+
+- ✅ Real-time voting and live vote count updates
+- ✅ Multi-AI model support (5 models)
+- ✅ Text-to-speech audio generation with colored subtitles
+- ✅ Anonymous voting with spam prevention
+- ✅ Leaderboard tracking across all questions
+- ✅ Mobile-friendly voting interface
+- ✅ Admin question submission form
+- ✅ Automatic audio file cleanup
+- ✅ Rate limiting and security measures
 
 ## Support
 

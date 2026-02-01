@@ -21,24 +21,15 @@ python3 -m pip install -r requirements.txt
 
 ### 2. Configure Environment Variables
 
-Edit the `.env` file and add your API keys:
+Copy the example environment file and configure it:
 
-```env
-OPENROUTER_API_KEY=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
-ELEVENLABS_API_KEY=sk_<YOUR_ELEVENLABS_KEY>
-SUPABASE_URL=https://xihfenboeoypghatehhl.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=<FROM_SUPABASE_DASHBOARD>
+```bash
+cp .env.example .env
 ```
 
-**Get Supabase Service Role Key:**
-1. Navigate to: https://supabase.com/dashboard/project/xihfenboeoypghatehhl/settings/api
-2. Copy the "service_role" key (NOT the anon key)
-3. Add to `.env` file
+Then edit `.env` and add your API keys. See `.env.example` for detailed instructions on obtaining each key.
 
-**Get ElevenLabs API Key:**
-1. Sign up at: https://elevenlabs.io/
-2. Copy API key from dashboard
-3. Add to `.env` file
+**IMPORTANT**: Never commit the `.env` file to git. It contains sensitive credentials.
 
 ### 3. Add Assets
 

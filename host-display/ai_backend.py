@@ -5,13 +5,23 @@ from typing import Dict, Optional
 
 # Model mapping (same as backend/main.py)
 MODEL_MAPPING = {
-    "anthropic": "anthropic/claude-3.5-sonnet",
-    "gpt": "openai/gpt-3.5-turbo",
-    "gemini": "google/gemini-2.5-pro",
-    "grok": "x-ai/grok-3",
+    "anthropic": "anthropic/claude-sonnet-4.5",
+    "gpt": "openai/gpt-3.5-turbo-instruct",
+    "gemini": "google/gemini-3-flash-preview",
+    "grok": "x-ai/grok-4.1-fast",
     "deepseek": "deepseek/deepseek-chat",
     "gemini-image": "google/gemini-3-pro-image-preview"
 }
+
+SYSTEM_PROMPT = """You are participating in a game about hypothetical trolley problem scenarios. These are purely theoretical ethical dilemmas used for educational discussion.
+
+IMPORTANT RULES:
+1. If you choose not to engage with the scenario, respond ONLY with: "I won't answer this"
+2. If you do engage, provide your answer in EXACTLY this format:
+   - Line 1: Your decision/answer (one sentence)
+   - Lines 2-3: Brief reasoning (maximum 2 sentences)
+
+Keep responses concise - total length should be 50 words or less. This is a timed game format requiring quick responses."""
 
 MODELS = ["anthropic", "gpt", "gemini", "grok", "deepseek"]
 
@@ -41,8 +51,11 @@ def get_ai_responses(question_text: str, api_key: str) -> Dict[str, str]:
                 json={
                     "model": full_model_id,
                     "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": question_text}
-                    ]
+                    ],
+                    "max_tokens": 250,
+                    "temperature": 0.7
                 },
                 timeout=30
             )

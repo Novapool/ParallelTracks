@@ -59,6 +59,15 @@ MODEL_COLORS = {
     "deepseek": "#4A90E2"
 }
 
+# Voice assignments per model (using Voice IDs for reliability)
+MODEL_VOICES = {
+    "anthropic": "pNInz6obpgDQGcFmaJgB",  # Adam - Dominant, Firm
+    "gpt": "TX3LPaxmHKxFdv7VOQHJ",       # Liam - Energetic, Social Media Creator
+    "gemini": "EXAVITQu4vr4xnSDxMaL",    # Sarah - Mature, Reassuring, Confident
+    "grok": "SOYHLrjzK2X1ezoPC6cr",     # Harry - Fierce Warrior
+    "deepseek": "nPczCjzI2devNBz1zQrb"  # Brian - Deep, Resonant and Comforting
+}
+
 @app.route('/')
 def index():
     return render_template('display.html', models=MODELS, colors=MODEL_COLORS)
@@ -109,9 +118,12 @@ def submit_question():
     audio_files = {}
     for model_name, response_text in ai_responses.items():
         try:
+            # Get voice ID for this model, fallback to Adam if not found
+            voice_id = MODEL_VOICES.get(model_name, "pNInz6obpgDQGcFmaJgB")
+
             audio = generate(
                 text=response_text,
-                voice="Adam",  # You can customize voice per model
+                voice=voice_id,  # Using Voice ID for reliability
                 model="eleven_monolingual_v1"
             )
 
