@@ -79,7 +79,7 @@ mv .env.backup .env
 python3 app.py
 
 # In another terminal, try to exploit:
-curl http://localhost:5000/static/audio/../../app.py
+curl http://localhost:8000/static/audio/../../app.py
 # Should return 404, not the file contents
 ```
 
@@ -87,7 +87,7 @@ curl http://localhost:5000/static/audio/../../app.py
 ```bash
 # Submit 6 questions rapidly (requires valid .env):
 for i in {1..6}; do
-  curl -X POST http://localhost:5000/submit_question \
+  curl -X POST http://localhost:8000/submit_question \
     -H "Content-Type: application/json" \
     -d '{"question_text":"Test question number '$i'"}' &
 done
@@ -97,14 +97,14 @@ done
 ### Test Input Validation
 ```bash
 # Test too short:
-curl -X POST http://localhost:5000/submit_question \
+curl -X POST http://localhost:8000/submit_question \
   -H "Content-Type: application/json" \
   -d '{"question_text":"Hi"}'
 # Should return: "Question text too short (min 10 characters)"
 
 # Test too long:
 python3 -c "print('{\"question_text\":\"' + 'x'*5001 + '\"}'))" | \
-  curl -X POST http://localhost:5000/submit_question \
+  curl -X POST http://localhost:8000/submit_question \
     -H "Content-Type: application/json" \
     -d @-
 # Should return: "Question text too long (max 5000 characters)"

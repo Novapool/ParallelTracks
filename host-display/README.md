@@ -59,11 +59,13 @@ Place image at `static/images/trolley-problem.png` (800px width recommended)
 python3 app.py
 ```
 
-Access at: http://localhost:5000
+Access at: http://localhost:8000
+
+> **Note**: Port 8000 is used by default to avoid conflicts with macOS AirPlay Receiver (which uses port 5000). You can change the port by setting the `PORT` environment variable.
 
 ## Usage
 
-1. Open browser to `http://localhost:5000`
+1. Open browser to `http://localhost:8000`
 2. Enter a trolley problem question in the admin form
 3. Click "Submit Question"
 4. AI responses will load for all 5 models
@@ -75,7 +77,7 @@ Access at: http://localhost:5000
 
 ```bash
 pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
+gunicorn -w 4 -b 0.0.0.0:8000 app:app
 ```
 
 ### Systemd Service (Auto-start on boot)
