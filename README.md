@@ -1,15 +1,25 @@
 # ParallelTracks - Live AI Voting System
 
-A real-time voting system for AI trolley problem answers using Supabase. Single lobby, anonymous voting, with live updates and AI leaderboard tracking.
+A real-time voting system for AI trolley problem answers using Supabase. Features AI-generated scenario images, voice personalities, auto-play audio with colored subtitles, and live vote tracking with a leaderboard.
 
 ## Overview
 
-ParallelTracks allows users to vote on AI model responses to ethical dilemmas (trolley problems). The system supports 5 AI models:
-- **Anthropic** (Claude)
-- **GPT** (OpenAI)
-- **Gemini** (Google)
-- **Grok** (xAI)
-- **DeepSeek** (DeepSeek)
+ParallelTracks allows users to vote on AI model responses to ethical dilemmas (trolley problems). The system supports 5 AI models, each with unique voice personalities:
+- **Anthropic** (Claude) - Voice: Adam (Dominant, Firm)
+- **GPT** (OpenAI) - Voice: Liam (Energetic, Social Media Creator)
+- **Gemini** (Google) - Voice: Sarah (Mature, Reassuring, Confident)
+- **Grok** (xAI) - Voice: George (Warm, Captivating Storyteller)
+- **DeepSeek** - Voice: Brian (Deep, Resonant and Comforting)
+
+## Key Features
+
+- 🎨 **AI-Generated Scenario Images** - Visual illustrations created by Gemini for each question
+- 🎤 **Voice Personalities** - Each AI model has a distinct ElevenLabs voice character
+- 🔊 **Auto-play Audio** - Automatic sequential playback with colored subtitle overlays
+- 📝 **Template-Based Input** - Structured question creation with two-outcome format
+- 🗳️ **Real-time Voting** - Live vote counts via Supabase Realtime
+- 🏆 **AI Leaderboard** - Track performance across all questions
+- 🧹 **Automatic Cleanup** - Old audio files removed before each new question
 
 ## Quick Start
 
@@ -18,20 +28,20 @@ ParallelTracks allows users to vote on AI model responses to ethical dilemmas (t
 - Python 3.8+ (for host display)
 - Node.js 18+ (for voting webapp)
 - [Supabase account](https://supabase.com) with a project set up
-- [OpenRouter API key](https://openrouter.ai/) (for AI responses)
-- [ElevenLabs API key](https://elevenlabs.io/) (for text-to-speech)
+- [OpenRouter API key](https://openrouter.ai/) (for AI responses and image generation)
+- [ElevenLabs API key](https://elevenlabs.io/) (for text-to-speech voice synthesis)
 
 ### 1. Clone and Setup Environment
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ParallelTracks.git
+git clone https://github.com/Novapool/ParallelTracks.git
 cd ParallelTracks
 ```
 
 ### 2. Setup Host Display (Game Screen)
 
-The host display shows questions, AI responses, and audio playback on a large screen.
+The host display shows AI-generated scenario images, questions, model responses with colored cards, and auto-play audio with voice personalities.
 
 ```bash
 # Navigate to host display
@@ -90,35 +100,83 @@ Open http://localhost:3000 to see the voting interface.
 ### 4. Test the Full Flow
 
 1. **Start both applications** (host display on :8000, webapp on :3000)
-2. **Submit a question** via the admin form at http://localhost:8000
-   - Example: "Should you flip the switch to save five people at the cost of one?"
-3. **Watch AI responses generate** - All 5 models will respond with colored cards
-4. **Play audio responses** - Click play buttons to hear TTS with colored subtitles
+2. **Create a scenario** via the admin form at http://localhost:8000
+   - Fill in Outcome 1: "kill 5 innocent workers on the main track"
+   - Fill in Outcome 2: "kill 1 innocent person on the side track"
+   - Preview shows: "You must choose between two bad outcomes: allowing a runaway trolley to [outcome 1] or pulling a lever to divert it to a side track where it will [outcome 2]."
+3. **Watch the magic happen**:
+   - Gemini generates a sketch-style scenario image
+   - All 5 AI models respond with ethical reasoning
+   - ElevenLabs creates voice audio for each response
+   - Colored cards display all responses
+4. **Auto-play audio** - Click "Click Here to Start Auto-play" to hear all responses sequentially with colored subtitles
 5. **Vote on webapp** - Open http://localhost:3000 and vote for your favorite response
-6. **See live updates** - Vote counts update in real-time on the host display
+6. **See live updates** - Vote counts update in real-time on both displays
 
 ### How It Works
 
-1. **Admin submits question** → Question sent to Supabase → AI models generate responses
-2. **Responses displayed** → Host display shows all 5 AI responses with colored cards
-3. **Text-to-speech** → ElevenLabs converts responses to audio files
-4. **Users vote** → Scan QR code (or visit webapp) → Vote for favorite AI response
-5. **Live updates** → Supabase Realtime pushes vote counts to host display
-6. **Leaderboard** → Track which AI model is winning over time
+1. **Admin creates scenario** → Fill template with two outcomes → Question sent to Supabase
+2. **AI image generation** → Gemini creates a sketch-style illustration of the scenario
+3. **AI responses** → All 5 models respond with their ethical reasoning (via OpenRouter)
+4. **Voice synthesis** → Each response converted to audio using model's assigned ElevenLabs voice
+5. **Display & playback** → Host shows colored cards, auto-plays audio with matching subtitle overlays
+6. **Users vote** → Scan QR code or visit webapp → Vote for favorite AI response
+7. **Live updates** → Supabase Realtime pushes vote counts to both host and webapp
+8. **Leaderboard** → Track which AI model is winning over time
+
+## Question Template Format
+
+ParallelTracks uses a structured template for creating ethical dilemmas. This ensures consistency and helps users quickly understand the scenario:
+
+**Template:**
+> You must choose between two bad outcomes: allowing a runaway trolley to **[OUTCOME 1]** or pulling a lever to divert it to a side track where it will **[OUTCOME 2]**.
+
+**Example:**
+- **Outcome 1:** "kill 5 innocent workers on the main track"
+- **Outcome 2:** "kill 1 innocent person on the side track"
+
+**Generated Question:**
+> You must choose between two bad outcomes: allowing a runaway trolley to kill 5 innocent workers on the main track or pulling a lever to divert it to a side track where it will kill 1 innocent person on the side track.
+
+The admin interface includes a live preview that updates as you type, character counters (max 500 chars per outcome), and validation to ensure both outcomes are filled.
+
+## AI Models & Voice Personalities
+
+Each AI model has a unique voice personality to create a more engaging experience:
+
+| AI Model | Voice Character | Personality | Color |
+|----------|----------------|-------------|-------|
+| **Anthropic (Claude)** | Adam | Dominant, Firm | Orange (#D97757) |
+| **GPT (OpenAI)** | Liam | Energetic, Social Media Creator | Green (#10A37F) |
+| **Gemini (Google)** | Sarah | Mature, Reassuring, Confident | Purple (#8E75F0) |
+| **Grok (xAI)** | George | Warm, Captivating Storyteller | Blue (#1D9BF0) |
+| **DeepSeek** | Brian | Deep, Resonant and Comforting | Blue (#4A90E2) |
+
+**Voice synthesis powered by:** [ElevenLabs](https://elevenlabs.io/)
+**Image generation powered by:** Google Gemini (Nano Banana Pro)
 
 ## Architecture
 
 ### Frontend Flow
-1. **Local Game Display**: Shows question + all 5 AI answers + QR code
-2. **Webapp**: Users scan QR → see question + voting buttons
-3. **Real-time Updates**: Live vote counts displayed on game screen via Supabase Realtime
-4. **Leaderboard**: Track AI model performance over time
+1. **Template Input**: Admin fills two-outcome template → Question generated
+2. **Visual Generation**: Gemini creates sketch-style scenario illustration
+3. **AI Responses**: OpenRouter queries 5 models → Responses displayed in colored cards
+4. **Voice Synthesis**: ElevenLabs generates audio with unique voice per model
+5. **Game Display**: Shows scenario image + question + all 5 AI answers with auto-play audio
+6. **Voting Interface**: Users scan QR → see question + voting buttons on mobile
+7. **Real-time Updates**: Live vote counts displayed via Supabase Realtime
+8. **Leaderboard**: Track AI model performance over time
 
 ### Backend Stack
 - **Database**: Supabase PostgreSQL
 - **Real-time**: Supabase Realtime (WebSocket subscriptions)
 - **API**: Supabase Edge Functions (Deno)
 - **Authentication**: Anonymous + Service Role keys
+- **AI Models**: OpenRouter API (Anthropic, OpenAI, Google, xAI, DeepSeek)
+- **Image Generation**: Google Gemini via OpenRouter (Nano Banana Pro)
+- **Text-to-Speech**: ElevenLabs API with voice personalities
+- **Host Server**: Flask (Python) for game display
+- **Voting Interface**: Next.js 14 (React, TypeScript, Tailwind CSS)
 
 ## Database Schema
 
@@ -342,8 +400,15 @@ curl 'https://xihfenboeoypghatehhl.supabase.co/functions/v1/get_current_state' \
 
 **Audio doesn't play**
 - Verify `ELEVENLABS_API_KEY` is set correctly
+- Click "Click Here to Start Auto-play" to unlock audio in browser
 - Check browser console for errors
 - Ensure audio files are generated in `host-display/static/audio/`
+
+**Image generation fails**
+- Check `OPENROUTER_API_KEY` is valid and has credits
+- Verify Gemini model is available on OpenRouter
+- Check `host-display/static/images/` directory exists and is writable
+- Look for image generation errors in Flask console logs
 
 **Port conflicts**
 - Host display uses port 8000 (set `PORT=` in .env to change)
@@ -369,11 +434,13 @@ curl 'https://xihfenboeoypghatehhl.supabase.co/functions/v1/get_current_state' \
 ### Frontend Applications
 
 ✅ **Host Display (host-display/)**
-- Flask application with admin form for submitting questions
+- Flask application with template-based scenario creation form
+- AI image generation via Gemini (Nano Banana) for visual scenarios
 - AI integration via OpenRouter (5 models: Anthropic, GPT, Gemini, Grok, DeepSeek)
-- Text-to-speech via ElevenLabs with colored subtitles
-- Audio playback with automatic file cleanup
-- Rate limiting and security features
+- Text-to-speech via ElevenLabs with unique voice personalities per model
+- Auto-play audio with colored subtitle overlays matching each model
+- Automatic cleanup of old audio and image files
+- Rate limiting (5 questions/hour) and security features
 - Environment-based configuration (.env)
 
 ✅ **Voting Webapp (paralleltracks-webapp/)**
@@ -394,15 +461,17 @@ curl 'https://xihfenboeoypghatehhl.supabase.co/functions/v1/get_current_state' \
 
 ## Features
 
-- ✅ Real-time voting and live vote count updates
-- ✅ Multi-AI model support (5 models)
-- ✅ Text-to-speech audio generation with colored subtitles
-- ✅ Anonymous voting with spam prevention
-- ✅ Leaderboard tracking across all questions
-- ✅ Mobile-friendly voting interface
-- ✅ Admin question submission form
-- ✅ Automatic audio file cleanup
-- ✅ Rate limiting and security measures
+- ✅ **AI-Generated Images** - Scenario illustrations created by Gemini (Nano Banana)
+- ✅ **Voice Personalities** - Each AI model has a unique ElevenLabs voice character
+- ✅ **Auto-play Audio** - Sequential audio playback with colored subtitle overlays
+- ✅ **Template-Based Questions** - Structured two-outcome scenario creation
+- ✅ **Real-time Voting** - Live vote count updates via Supabase Realtime
+- ✅ **Multi-AI Support** - 5 AI models respond to each question
+- ✅ **Anonymous Voting** - Session-based voting with duplicate prevention
+- ✅ **AI Leaderboard** - Track model performance across all questions
+- ✅ **Mobile-Friendly** - Responsive voting interface for phones
+- ✅ **Automatic Cleanup** - Old audio and image files managed automatically
+- ✅ **Rate Limiting** - Security measures to prevent abuse
 
 ## Support
 

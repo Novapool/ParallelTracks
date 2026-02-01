@@ -6,7 +6,7 @@ from typing import Dict, Optional
 # Model mapping (same as backend/main.py)
 MODEL_MAPPING = {
     "anthropic": "anthropic/claude-sonnet-4.5",
-    "gpt": "openai/gpt-3.5-turbo-instruct",
+    "gpt": "openai/gpt-3.5-turbo",
     "gemini": "google/gemini-3-flash-preview",
     "grok": "x-ai/grok-4.1-fast",
     "deepseek": "deepseek/deepseek-chat",
